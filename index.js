@@ -1,9 +1,10 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 2000;
 const post = require("./post");
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
+const ncrypt = require("ncrypt-js"); // or var { encrypt, decrypt } = require('ncrypt-js);
 
 const mongoose = require('mongoose');
 const connectionpOptions = {
@@ -55,5 +56,26 @@ app.post('/:id', jsonParser, (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+    console.log(`Example app listening at http://localhost:${port}`)
 })
+
+
+/* 
+    Generates a 6 character Alpha-Numeric ID
+*/
+function generateID() {
+    return Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+
+/* 
+    Encrypts a password using a key.
+*/
+function encryptPassword(password, key) {
+    return ncrypt.encrypt(password, key);
+}
+/* 
+    Decrypts a password.
+*/
+function decryptPassword(encryptedData) {
+    return ncrypt.decrypt(encryptData);
+}
