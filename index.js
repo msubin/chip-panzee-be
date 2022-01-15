@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 2000;
 const post = require("./post");
+const ncrypt = require("ncrypt-js"); // or var { encrypt, decrypt } = require('ncrypt-js);
 
 const mongoose = require('mongoose');
 const connectionpOptions = {
@@ -15,7 +16,7 @@ const PostModel = mongoose.model('posts', post.postsSchema);
 app.get('/:id', (req, res) => {
     PostModel.find({ stringId: req.params.id }, (err, objects) => {
         if (err) {
-            res.send({code: 404, msg: "An error happened"});
+            res.send({ code: 404, msg: "An error happened" });
         } else {
             res.send(objects);
         }
@@ -23,5 +24,34 @@ app.get('/:id', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+    console.log(`Example app listening at http://localhost:${port}`)
 })
+
+
+/* 
+    Generates a 6 character Alpha-Numeric ID
+*/
+function generateID() {
+    return Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+
+/* 
+    Encrypts a password using a key.
+*/
+function encryptPassword(password, key) {
+    return ncrypt.encrypt(password, key);
+}
+/* 
+    Decrypts a password.
+*/
+function decryptPassword(encryptedData) {
+    return ncrypt.decrypt(encryptData);
+}
+  
+
+// TODO:
+//
+// Password-Hashcode Function
+// ID GEN Function
+//  
+
