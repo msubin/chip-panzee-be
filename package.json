@@ -1,0 +1,23 @@
+{
+  "name": "chip-panzee-be",
+  "version": "1.0.0",
+  "description": "Simple overview of use/purpose.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msubin/chip-panzee-be.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/msubin/chip-panzee-be/issues"
+  },
+  "homepage": "https://github.com/msubin/chip-panzee-be#readme",
+  "dependencies": {
+    "express": "^4.17.2",
+    "mongoose": "^6.1.6"
+  }
+}
