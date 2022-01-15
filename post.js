@@ -7,20 +7,13 @@ const postsSchema = new mongoose.Schema({
     description: String,
     price: Number,
     numberOfPeople: Number,
-    chippedInMembers: [
-        {
-            name:String,
-            amount: Number,
-            email: String
-        }
-    ],
     startingDate: String,
     passcode: String,
     bankInfo: {
-        name: String,
         email: String,
         phone: Number
     },
-    image: String
+    image: String,
+    url: String
 });
 module.exports = { postsSchema };
