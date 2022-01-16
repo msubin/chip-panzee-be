@@ -15,11 +15,12 @@
   "bugs": {
     "url": "https://github.com/msubin/chip-panzee-be/issues"
   },
-  "homepage": "https://github.com/msubin/chip-panzee-be#readme",
+  "homepage": "https://chippinzee.com/",
   "dependencies": {
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^4.17.2",
-    "mongoose": "^6.1.6"
+    "mongoose": "^6.1.6",
+    "nodemon": "^2.0.15"
   }
 }
