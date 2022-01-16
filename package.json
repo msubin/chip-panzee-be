@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/msubin/chip-panzee-be#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^4.17.2",
     "mongoose": "^6.1.6"
