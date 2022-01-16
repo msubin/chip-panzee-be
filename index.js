@@ -21,14 +21,14 @@ mongoose.connect(connectionUri, connectionpOptions);
 const PostModel = mongoose.model('posts', post.postsSchema);
 
 // Get post
-app.get('/:id', (req, res) => {
+app.get('api/:id', (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, object) => {
         if (err) {
             res.json(err);
         } else {
             if (object.open == 0) {
                 res.json({code: 404, msg: "Nothing found"});
-            } else if (object.passcode != decrypt(object.passcodeIv, object.passcodeContent)) {
+            } else if (req.query.passcode != decrypt(object.passcodeIv, object.passcodeContent)) {
                 res.json({code: 401, msg: "Wrong passcode"});
             } else {
                 res.json(object);
@@ -38,7 +38,7 @@ app.get('/:id', (req, res) => {
 });
 
 // Create Post
-app.post('/', jsonParser, (req, res) => {
+app.post('api/', jsonParser, (req, res) => {
     const bodyObject = req.body;
     if (!bodyObject || !bodyObject.passcodeContent) {
         res.json({code: 400, msg: "No passcode provided!"});
@@ -62,7 +62,7 @@ app.post('/', jsonParser, (req, res) => {
 });
 
 // Update Post
-app.post('/:id', jsonParser, (req, res) => {
+app.post('api/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, original) => {
         if (err) {
             res.json(err);
@@ -71,12 +71,14 @@ app.post('/:id', jsonParser, (req, res) => {
                 res.send({code: 401, msg:"Wrong passcode.", id: req.params.id});
             } else {
                 const bodyObject = req.body;
-                bodyObject.stringId = undefined;
-                bodyObject.passcodeIv = undefined;
-                bodyObject.passcodeContent = undefined;
-                bodyObject.startingDate = undefined;
-                bodyObject.comments = undefined;
-                bodyObject.open = 1;
+                if (bodyObject) {
+                    bodyObject.stringId = undefined;
+                    bodyObject.passcodeIv = undefined;
+                    bodyObject.passcodeContent = undefined;
+                    bodyObject.startingDate = undefined;
+                    bodyObject.comments = undefined;
+                    bodyObject.open = 1;
+                }
                 PostModel.findOneAndUpdate({ stringId: req.params.id }, bodyObject, {new: true, returnOriginal: false }, (err, post) => {
                     if (err) {
                         res.json(err);
@@ -91,7 +93,7 @@ app.post('/:id', jsonParser, (req, res) => {
 
 
 // Check password
-app.get('/checkpasscode/:id', jsonParser, (req, res) => {
+app.get('api/checkpasscode/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, post) => {
         if (err) {
             res.json(err);
@@ -107,7 +109,7 @@ app.get('/checkpasscode/:id', jsonParser, (req, res) => {
 
 
 // close a post
-app.delete('/:id', jsonParser, (req, res) => {
+app.delete('api/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, post) => {
         if (err) {
             res.json(err);
@@ -135,7 +137,7 @@ app.delete('/:id', jsonParser, (req, res) => {
 
 
 // Add Comment
-app.get('/comment/:id', jsonParser, (req, res) => {
+app.get('api/comment/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, post) => {
         if (err) {
             res.json(err);
