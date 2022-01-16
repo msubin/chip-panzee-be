@@ -3,7 +3,6 @@ var cors = require('cors')
 const app = express();
 app.use(cors())
 const port = 2000;
-const hostName = "74.207.245.179";
 const post = require("./post");
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
@@ -22,12 +21,12 @@ mongoose.connect(connectionUri, connectionpOptions);
 const PostModel = mongoose.model('posts', post.postsSchema);
 
 // Get post
-app.get('api/:id', (req, res) => {
+app.get('/api/:id', (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, object) => {
         if (err) {
             res.json(err);
         } else {
-            if (object.open == 0) {
+            if (!object || (object && object.open == 0)) {
                 res.json({code: 404, msg: "Nothing found"});
             } else if (req.query.passcode != decrypt(object.passcodeIv, object.passcodeContent)) {
                 res.json({code: 401, msg: "Wrong passcode"});
@@ -39,7 +38,7 @@ app.get('api/:id', (req, res) => {
 });
 
 // Create Post
-app.post('api/', jsonParser, (req, res) => {
+app.post('/', jsonParser, (req, res) => {
     const bodyObject = req.body;
     if (!bodyObject || !bodyObject.passcodeContent) {
         res.json({code: 400, msg: "No passcode provided!"});
@@ -63,12 +62,14 @@ app.post('api/', jsonParser, (req, res) => {
 });
 
 // Update Post
-app.post('api/:id', jsonParser, (req, res) => {
+app.post('/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, original) => {
         if (err) {
             res.json(err);
         } else {
-            if (req.query.passcode != decrypt(original.passcodeIv, original.passcodeContent)) {
+            if (!original) {
+                res.send({code: 404, msg:"ID not found.", id: req.params.id});
+            } else if (req.query.passcode != decrypt(original.passcodeIv, original.passcodeContent)) {
                 res.send({code: 401, msg:"Wrong passcode.", id: req.params.id});
             } else {
                 const bodyObject = req.body;
@@ -94,7 +95,7 @@ app.post('api/:id', jsonParser, (req, res) => {
 
 
 // Check password
-app.get('api/checkpasscode/:id', jsonParser, (req, res) => {
+app.get('/checkpasscode/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, post) => {
         if (err) {
             res.json(err);
@@ -110,7 +111,7 @@ app.get('api/checkpasscode/:id', jsonParser, (req, res) => {
 
 
 // close a post
-app.delete('api/:id', jsonParser, (req, res) => {
+app.delete('/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, post) => {
         if (err) {
             res.json(err);
@@ -138,7 +139,7 @@ app.delete('api/:id', jsonParser, (req, res) => {
 
 
 // Add Comment
-app.get('api/comment/:id', jsonParser, (req, res) => {
+app.get('/comment/:id', jsonParser, (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, post) => {
         if (err) {
             res.json(err);
@@ -193,6 +194,6 @@ const getDate = () => {
 };
 
 
-app.listen(port, hostName, () => {
-    console.log(`app listening`)
+app.listen(port, () => {
+    console.log(`app listening at http://localhost:${port}`)
 })
