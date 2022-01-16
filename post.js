@@ -14,6 +14,7 @@ const postsSchema = new mongoose.Schema({
     bankPhone: String,
     image: String,
     url: String,
-    open: Number
+    open: Number,
+    comments: [String]
 });
 module.exports = { postsSchema };

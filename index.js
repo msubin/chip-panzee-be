@@ -47,6 +47,7 @@ app.post('/', jsonParser, (req, res) => {
         bodyObject.stringId = generateID();
         bodyObject.open = 1;
         bodyObject.startingDate = getDate();
+        bodyObject.comments = [];
         const post = new PostModel(bodyObject);
         post.save((err) => {
             if (err) {
@@ -72,10 +73,11 @@ app.post('/:id', jsonParser, (req, res) => {
                 bodyObject.passcodeIv = undefined;
                 bodyObject.passcodeContent = undefined;
                 bodyObject.startingDate = undefined;
+                bodyObject.comments = undefined;
                 bodyObject.open = 1;
                 PostModel.findOneAndUpdate({ stringId: req.params.id }, bodyObject, {new: true, returnOriginal: false }, (err, post) => {
                     if (err) {
-                        res.json();
+                        res.json(err);
                     } else {
                         res.json(post);
                     }
@@ -119,7 +121,7 @@ app.delete('/:id', jsonParser, (req, res) => {
                 bodyObject.open = 0;
                 PostModel.findOneAndUpdate({ stringId: req.params.id }, bodyObject, {new: false, returnOriginal: false }, (err) => {
                     if (err) {
-                        res.json();
+                        res.json(err);
                     } else {
                        res.json({code: 202, msg:"Deleted.", id: req.params.id});
                     }
@@ -130,6 +132,29 @@ app.delete('/:id', jsonParser, (req, res) => {
 });
 
 
+// Add Comment
+app.get('/comment/:id', jsonParser, (req, res) => {
+    PostModel.findOne({ stringId: req.params.id }, (err, post) => {
+        if (err) {
+            res.json(err);
+        } else {
+            const comment = req.query.comment;
+            if (comment.length > 100) {
+                res.json({code: 400, message: "Comment is too long.", id: req.params.id});
+            } else {
+                post.comments.push(comment)
+                const change = {"comments": post.comments};
+                PostModel.findOneAndUpdate({ stringId: req.params.id }, change, {new: true, returnOriginal: false }, (err, post) => {
+                    if (err) {
+                        res.json(err);
+                    } else {
+                        res.json(post);
+                    }
+                });
+            }
+        }
+    });
+});
 
 /* 
     Generates a 6 character Alpha-Numeric ID
@@ -161,8 +186,6 @@ const getDate = () => {
     const year = date_ob.getFullYear();
     return year + "-" + month + "-" + date;
 };
-
-
 
 
 app.listen(port, () => {
