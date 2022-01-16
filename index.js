@@ -4,7 +4,11 @@ const port = 2000;
 const post = require("./post");
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
-const ncrypt = require("ncrypt-js"); // or var { encrypt, decrypt } = require('ncrypt-js);
+
+const crypto = require('crypto');
+const algorithm = 'aes-256-ctr';
+const KEY = "mZq4t6w9z$C&F)J@NcRfUjXn2r5u8x!A";
+const iv = crypto.randomBytes(16);
 
 const mongoose = require('mongoose');
 const connectionpOptions = {
@@ -20,62 +24,145 @@ app.get('/:id', (req, res) => {
         if (err) {
             res.json(err);
         } else {
-            res.json(object);
+            if (object.open == 0) {
+                res.json({code: 404, msg: "Nothing found"});
+            } else {
+                res.json(object);
+            }
         }
     })
-})
+});
 
-// Update Post
+// Create Post
 app.post('/', jsonParser, (req, res) => {
-    console.log(req.body);
-    // TODO: implement create with 
-    const post = new PostModel(re.body);
-    post.save((err) => {
-        if (err) {
-            res.json(err);
-        } else {
-            res.send({code: 201, msg:"ok", id: ""});
-        }
-    });
-})
-
-// Update Post
-app.post('/:id', jsonParser, (req, res) => {
-    // TODO: Check pass code here
-    const filter = { stringId: req.params.id };
-    PostModel.findOneAndUpdate(filter, req.body, (err, post) => {
-        PostModel.findOne({ stringId: post.stringId }, (err, post) => {
+    const bodyObject = req.body;
+    if (!bodyObject || !bodyObject.passcodeContent) {
+        res.json({code: 400, msg: "No passcode provided!"});
+    } else {
+        const passcode = encrypt(bodyObject.passcodeContent);
+        bodyObject.passcodeIv = passcode.iv;
+        bodyObject.passcodeContent = passcode.content;
+        bodyObject.stringId = generateID();
+        bodyObject.open = 1;
+        bodyObject.startingDate = getDate();
+        const post = new PostModel(bodyObject);
+        post.save((err) => {
             if (err) {
                 res.json(err);
             } else {
-                res.json(post);
+                res.send({code: 201, msg:"ok", id: bodyObject.stringId});
             }
-        })
+        });
+    }
+});
+
+// Update Post
+app.post('/:id', jsonParser, (req, res) => {
+    PostModel.findOne({ stringId: req.params.id }, (err, original) => {
+        if (err) {
+            res.json(err);
+        } else {
+            if (req.query.passcode != decrypt(original.passcodeIv, original.passcodeContent)) {
+                res.send({code: 401, msg:"Wrong passcode.", id: req.params.id});
+            } else {
+                const bodyObject = req.body;
+                bodyObject.stringId = undefined;
+                bodyObject.passcodeIv = undefined;
+                bodyObject.passcodeContent = undefined;
+                bodyObject.startingDate = undefined;
+                bodyObject.open = 1;
+                PostModel.findOneAndUpdate({ stringId: req.params.id }, bodyObject, {new: true, returnOriginal: false }, (err, post) => {
+                    if (err) {
+                        res.json();
+                    } else {
+                        res.json(post);
+                    }
+                });
+            }
+        }
     });
-})
+});
 
 
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
-})
+// Check password
+app.get('/checkpasscode/:id', jsonParser, (req, res) => {
+    PostModel.findOne({ stringId: req.params.id }, (err, post) => {
+        if (err) {
+            res.json(err);
+        } else {
+            if (req.query.passcode != decrypt(post.passcodeIv, post.passcodeContent)) {
+                res.send({code: 401, msg:"Wrong passcode.", id: req.params.id});
+            } else {
+                res.send({code: 200, msg:"OK", id: req.params.id});
+            }
+        }
+    });
+});
+
+
+// close a post
+app.delete('/:id', jsonParser, (req, res) => {
+    PostModel.findOne({ stringId: req.params.id }, (err, post) => {
+        if (err) {
+            res.json(err);
+        } else {
+            if (req.query.passcode != decrypt(post.passcodeIv, post.passcodeContent)) {
+                res.send({code: 401, msg:"Wrong passcode.", id: req.params.id});
+            } else {
+                const bodyObject = post;
+                bodyObject.stringId = undefined;
+                bodyObject.passcodeIv = undefined;
+                bodyObject.passcodeContent = undefined;
+                bodyObject.startingDate = undefined;
+                bodyObject.open = 0;
+                PostModel.findOneAndUpdate({ stringId: req.params.id }, bodyObject, {new: false, returnOriginal: false }, (err) => {
+                    if (err) {
+                        res.json();
+                    } else {
+                       res.json({code: 202, msg:"Deleted.", id: req.params.id});
+                    }
+                });
+            }
+        }
+    });
+});
+
 
 
 /* 
     Generates a 6 character Alpha-Numeric ID
 */
 function generateID() {
-    return Math.random().toString(36).substr(2, 6).toUpperCase();
+    return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
-/* 
-    Encrypts a password using a key.
-*/
-function encryptPassword(password, key) {
-    return ncrypt.encrypt(password, key);
-}
-/* 
-    Decrypts a password.
-*/
-function decryptPassword(encryptedData) {
-    return ncrypt.decrypt(encryptData);
-}
+const encrypt = (text) => {
+    const cipher = crypto.createCipheriv(algorithm, KEY, iv);
+    const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+    return {
+        iv: iv.toString('hex'),
+        content: encrypted.toString('hex')
+    };
+};
+
+const decrypt = (hashIv, hashContent) => {
+    const decipher = crypto.createDecipheriv(algorithm, KEY, Buffer.from(hashIv, 'hex'));
+    const decrpyted = Buffer.concat([decipher.update(Buffer.from(hashContent, 'hex')), decipher.final()]);
+    return decrpyted.toString();
+};
+
+
+const getDate = () => {
+    const date_ob = new Date();
+    const date = ("0" + date_ob.getDate()).slice(-2);
+    const month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+    const year = date_ob.getFullYear();
+    return year + "-" + month + "-" + date;
+};
+
+
+
+
+app.listen(port, () => {
+    console.log(`app listening at http://localhost:${port}`)
+})

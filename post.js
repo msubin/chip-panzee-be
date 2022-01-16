@@ -8,12 +8,12 @@ const postsSchema = new mongoose.Schema({
     price: Number,
     numberOfPeople: Number,
     startingDate: String,
-    passcode: String,
-    bankInfo: {
-        email: String,
-        phone: Number
-    },
+    passcodeIv: String,
+    passcodeContent: String,
+    bankEmail: String,
+    bankPhone: String,
     image: String,
-    url: String
+    url: String,
+    open: Number
 });
 module.exports = { postsSchema };
