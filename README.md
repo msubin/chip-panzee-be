@@ -24,32 +24,17 @@ To interact with our repository:
 https://chippinzee.com
 
 
-## Help
-
-For any questions, comments or concerns / feedback please contact any of the devs below or contact:
-
-- dmitri.golota.ca
-
-
-```
-command to run if program contains helper info
-```
-
 ## Authors
 
 Contributors names and contact info:
 
 * Heqian (Michael) Liu - Developer
--------Contact:
 
 * Dmitri Golota - Developer
--------Contact: (https://golota.ca)
 
 * Subin Moon - Developer
--------Contact: 
 
 * Heejung (Heather) Lee - Developer
-------Contact:
  
 
 
