@@ -15,6 +15,7 @@ const postsSchema = new mongoose.Schema({
     image: String,
     url: String,
     open: Number,
+    owner: String,
     comments: [String]
 });
 module.exports = { postsSchema };
