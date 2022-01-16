@@ -28,6 +28,8 @@ app.get('/:id', (req, res) => {
         } else {
             if (object.open == 0) {
                 res.json({code: 404, msg: "Nothing found"});
+            } else if (object.passcode != decrypt(object.passcodeIv, object.passcodeContent)) {
+                res.json({code: 401, msg: "Wrong passcode"});
             } else {
                 res.json(object);
             }
