@@ -3,6 +3,7 @@ var cors = require('cors')
 const app = express();
 app.use(cors())
 const port = 80;
+const hostName = "74.207.245.179";
 const post = require("./post");
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
@@ -192,6 +193,6 @@ const getDate = () => {
 };
 
 
-app.listen(port, "0.0.0.0", () => {
+app.listen(port, hostName, () => {
     console.log(`app listening`)
 })
