@@ -2,7 +2,7 @@ const express = require('express');
 var cors = require('cors')
 const app = express();
 app.use(cors())
-const port = 80;
+const port = 2000;
 const hostName = "74.207.245.179";
 const post = require("./post");
 const bodyParser = require('body-parser');
