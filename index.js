@@ -21,7 +21,7 @@ mongoose.connect(connectionUri, connectionpOptions);
 const PostModel = mongoose.model('posts', post.postsSchema);
 
 // Get post
-app.get('/api/:id', (req, res) => {
+app.get('/:id', (req, res) => {
     PostModel.findOne({ stringId: req.params.id }, (err, object) => {
         if (err) {
             res.json(err);
